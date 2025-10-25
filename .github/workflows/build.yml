@@ -13,28 +13,40 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # 1️⃣ Checkout repo
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # 2️⃣ Install Flutter
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: '3.24.4'
 
-      - name: Install Shorebird
-        run: dart pub global activate shorebird_cli
+      # 3️⃣ Download Shorebird CLI binary
+      - name: Download Shorebird CLI
+        run: |
+          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.6.65/shorebird-linux-x64.tar.gz
+          tar -xzf shorebird-linux-x64.tar.gz
+          sudo mv shorebird /usr/local/bin/
+          shorebird --version
 
+      # 4️⃣ Download config.json
       - name: Download config.json
         run: |
           echo "⬇️ Downloading config.json from: ${{ github.event.inputs.config_url }}"
           curl -L "${{ github.event.inputs.config_url }}" -o config.json
           echo "✅ config.json downloaded successfully"
 
+      # 5️⃣ Apply configuration
       - name: Apply configuration
         run: dart run tools/apply_config.dart config.json
 
+      # 6️⃣ Build Android Release (Shorebird)
       - name: Build Android Release (Shorebird)
         run: shorebird release android --force
 
+      # 7️⃣ Build iOS Release (Shorebird)
       - name: Build iOS Release (Shorebird)
         run: shorebird release ios --force
+
