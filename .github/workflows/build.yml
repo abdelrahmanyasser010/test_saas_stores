@@ -1,0 +1,40 @@
+name: Build Flutter App
+
+on:
+  workflow_dispatch:
+    inputs:
+      config_url:
+        description: "The URL of the config.json file"
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Install Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: '3.24.4'
+
+      - name: Install Shorebird
+        run: dart pub global activate shorebird_cli
+
+      - name: Download config.json
+        run: |
+          echo "⬇️ Downloading config.json from: ${{ github.event.inputs.config_url }}"
+          curl -L "${{ github.event.inputs.config_url }}" -o config.json
+          echo "✅ config.json downloaded successfully"
+
+      - name: Apply configuration
+        run: dart run tools/apply_config.dart config.json
+
+      - name: Build Android Release (Shorebird)
+        run: shorebird release android --force
+
+      - name: Build iOS Release (Shorebird)
+        run: shorebird release ios --force

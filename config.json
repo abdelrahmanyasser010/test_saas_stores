@@ -1,0 +1,16 @@
+{
+  "app_name": "StoreMaster",
+  "package_name": "com.client.storemaster",
+  "version": "1.0.0",
+  "icon_url": "https://example.com/icons/app_icon.png",
+  "onboarding_images": [
+    "https://example.com/images/onboarding1.png",
+    "https://example.com/images/onboarding2.png"
+  ],
+  "splash_images": [
+    "https://example.com/images/splash1.png"
+  ],
+  "android_keystore": "<base64-encoded-content-of-keystore>",
+  "ios_cert": "<base64-encoded-content-of-ios-p12>"
+}
+
