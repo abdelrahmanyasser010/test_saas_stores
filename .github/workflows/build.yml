@@ -34,10 +34,9 @@ jobs:
       - name: Download Shorebird CLI
         run: |
           echo "⬇️ Downloading Shorebird CLI..."
-          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/latest/download/shorebird-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf shorebird.tar.gz
+          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/download/v1.6.65/shorebird-x86_64-unknown-linux-gnu.tar.gz
+          ls -lah
+          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed"; cat shorebird.tar.gz | head -n 20; exit 1)
           sudo mv shorebird /usr/local/bin/shorebird
           echo "✅ Shorebird installed successfully."
           shorebird --version
-
-      # ✅ 5. Authenticate Shore
