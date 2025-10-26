@@ -31,18 +31,28 @@ jobs:
         run: flutter pub get
 
       # ✅ 4. Download and install Shorebird CLI
-      - name: Download Shorebird CLI (via GitHub API)
+      - name: Download Shorebird CLI (Linux)
         run: |
           echo "⬇️ Fetching Shorebird CLI download URL..."
-          API_URL="https://api.github.com/repos/shorebirdtech/shorebird/releases/tags/v1.6.65"
-          ASSET_URL=$(curl -s $API_URL | grep "browser_download_url" | grep "linux-gnu.tar.gz" | cut -d '"' -f 4)
-          echo "Downloading from: $ASSET_URL"
-          curl -L -o shorebird.tar.gz "$ASSET_URL"
-          
-          echo "📦 Extracting..."
-          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed"; head -n 20 shorebird.tar.gz; exit 1)
-          
-          sudo mv shorebird /usr/local/bin/shorebird
-          echo "✅ Shorebird installed successfully."
+          RELEASE_DATA=$(curl -s https://api.github.com/repos/shorebirdtech/shorebird/releases/latest)
+          LATEST_URL=$(echo "$RELEASE_DATA" | grep -o 'https.*shorebird-x86_64-unknown-linux-gnu.tar.gz' | head -n 1)
+
+          if [ -z "$LATEST_URL" ]; then
+            echo "❌ Failed to find Linux release URL in Shorebird latest release."
+            echo "$RELEASE_DATA"
+            exit 1
+          fi
+
+          echo "📦 Downloading from: $LATEST_URL"
+          curl -L -o shorebird.tar.gz "$LATEST_URL"
+
+          echo "📂 Extracting..."
+          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed" && exit 1)
+
+          echo "✅ Installing..."
+          sudo mv shorebird /usr/local/bin/ || (echo "❌ Move failed" && exit 1)
+
+          echo "🧩 Version check:"
           shorebird --version
+
 
