@@ -27,22 +27,21 @@ jobs:
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: ⬇️ Download Shorebird CLI (v1.6.6)
+      - name: ⬇️ Downloading Shorebird CLI v1.6.65
         run: |
-          echo "⬇️ Downloading Shorebird CLI v1.6.6..."
-          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/download/v1.6.6/shorebird-x86_64-unknown-linux-gnu.tar.gz
-
+          echo "⬇️ Downloading Shorebird CLI v1.6.65..."
+          curl -L https://github.com/shorebirdtech/shorebird/archive/refs/tags/v1.6.65.tar.gz -o shorebird.tar.gz
           echo "📂 Extracting..."
-          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed" && exit 1)
+          tar -xzf shorebird.tar.gz
+          mv shorebird-1.6.65 shorebird
+          echo "✅ Shorebird source ready."
 
-          echo "✅ Installing..."
-          sudo mv shorebird /usr/local/bin/ || (echo "❌ Move failed" && exit 1)
-
-          echo "🧩 Version check:"
-          shorebird --version
-
-      - name: 🧠 Verify installation
-        run: shorebird doctor
+      - name: 🏗️ Build Shorebird CLI from source
+        run: |
+          cd shorebird/packages/shorebird_cli
+          flutter pub get
+          dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
+          echo "✅ Shorebird CLI compiled successfully."
 
       - name: 🏗️ Build AppBundle
         run: shorebird build appbundle --release
