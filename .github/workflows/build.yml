@@ -44,7 +44,7 @@ jobs:
           echo "✅ Shorebird CLI compiled successfully."
 
       - name: 🔑 Shorebird Login
-        run: shorebird login --api-token ${{ secrets.SHOREBIRD_TOKEN }}
+        run: shorebird login:ci --token ${{ secrets.SHOREBIRD_TOKEN }}
    
       - name: 🏗️ Build AppBundle
         run: shorebird release android -- --no-confirm
