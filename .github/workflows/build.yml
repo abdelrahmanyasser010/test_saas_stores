@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       config_url:
-        description: 'Optional configuration URL for backend triggering'
+        description: "Optional configuration URL for backend triggering"
         required: false
-        default: ''
+        default: ""
   push:
     branches:
       - main
@@ -16,30 +16,28 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
+      # ✅ 1. Checkout source code
       - name: Checkout repository
         uses: actions/checkout@v4
 
+      # ✅ 2. Setup Flutter SDK
       - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.35.6"
 
-      - name: Install Shorebird from Git (v1.6.65)
+      # ✅ 3. Install dependencies
+      - name: Get dependencies
+        run: flutter pub get
+
+      # ✅ 4. Download and install Shorebird CLI
+      - name: Download Shorebird CLI
         run: |
-          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git --git-ref v1.6.65
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          echo "⬇️ Downloading Shorebird CLI..."
+          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/latest/download/shorebird-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf shorebird.tar.gz
+          sudo mv shorebird /usr/local/bin/shorebird
+          echo "✅ Shorebird installed successfully."
+          shorebird --version
 
-      - name: Verify installation
-        run: shorebird --version
-
-      - name: Configure Shorebird
-        run: shorebird doctor
-
-      - name: Build AppBundle
-        run: shorebird build appbundle --release
-
-      - name: Upload AAB as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle
-          path: build/app/outputs/bundle/release/app-release.aab
+      # ✅ 5. Authenticate Shore
