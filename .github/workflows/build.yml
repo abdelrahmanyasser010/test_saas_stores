@@ -16,15 +16,15 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Flutter
+      - name: Install Flutter (3.29.0+)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.27.1' # ✅ تحديث إلى آخر إصدار يدعم Dart 3.9+
+          flutter-version: '3.29.0' # ✅ يدعم Dart 3.9.0
 
       - name: Install Shorebird CLI from Git
         run: |
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          export PATH="$PATH:$HOME/.pub-cache/bin"
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
           shorebird --version
 
       - name: Download config.json
