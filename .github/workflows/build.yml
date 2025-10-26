@@ -19,7 +19,7 @@ jobs:
       - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.4'
+          flutter-version: '3.27.1' # ✅ تحديث إلى آخر إصدار يدعم Dart 3.9+
 
       - name: Install Shorebird CLI from Git
         run: |
@@ -41,4 +41,3 @@ jobs:
 
       - name: Build iOS Release (Shorebird)
         run: shorebird release ios --force
-
