@@ -2,6 +2,11 @@ name: Shorebird Build
 
 on:
   workflow_dispatch:
+    inputs:
+      config_url:
+        description: 'Optional configuration URL for backend triggering'
+        required: false
+        default: ''
   push:
     branches:
       - main
@@ -11,29 +16,30 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧩 Checkout code
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🧰 Install Flutter
+      - name: Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.35.6' # نفس الإصدار اللي شغال عندك محليًا
+          flutter-version: "3.35.6"
 
-      - name: 🔧 Install dependencies
-        run: flutter pub get
-
-      - name: 🐦 Install Shorebird CLI from GitHub
+      - name: Install Shorebird
         run: |
-          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-          shorebird --version
+          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.6.6/shorebird-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf shorebird-x86_64-unknown-linux-gnu.tar.gz
+          sudo mv shorebird /usr/local/bin/shorebird
 
-      - name: 🏗️ Build release with Shorebird
+      - name: Configure Shorebird
         run: |
-          shorebird build release --platform android --force
+          shorebird doctor
 
-      - name: 📦 Upload build artifacts
+      - name: Build AppBundle
+        run: |
+          shorebird build appbundle --release
+
+      - name: Upload AAB as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: app-release
-          path: build/app/outputs/flutter-apk/app-release.apk
+          name: appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
