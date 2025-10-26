@@ -44,7 +44,7 @@ jobs:
           echo "✅ Shorebird CLI compiled successfully."
 
       - name: 🏗️ Build AppBundle
-        run: shorebird build appbundle --release
+        run: shorebird release android --force
 
       - name: 📤 Upload AAB as artifact
         uses: actions/upload-artifact@v4
