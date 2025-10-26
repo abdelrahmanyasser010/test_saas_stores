@@ -24,19 +24,19 @@ jobs:
         with:
           flutter-version: "3.35.6"
 
-      - name: Install Shorebird
+      - name: Install Shorebird from Git (v1.6.65)
         run: |
-          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.6.6/shorebird-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf shorebird-x86_64-unknown-linux-gnu.tar.gz
-          sudo mv shorebird /usr/local/bin/shorebird
+          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git --git-ref v1.6.65
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: Verify installation
+        run: shorebird --version
 
       - name: Configure Shorebird
-        run: |
-          shorebird doctor
+        run: shorebird doctor
 
       - name: Build AppBundle
-        run: |
-          shorebird build appbundle --release
+        run: shorebird build appbundle --release
 
       - name: Upload AAB as artifact
         uses: actions/upload-artifact@v4
