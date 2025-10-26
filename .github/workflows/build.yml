@@ -4,9 +4,9 @@ on:
   workflow_dispatch:
     inputs:
       config_url:
-        description: "Optional configuration URL for backend triggering"
+        description: 'Optional configuration URL for backend triggering'
         required: false
-        default: ""
+        default: ''
   push:
     branches:
       - main
@@ -16,35 +16,21 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      # ✅ 1. Checkout source code
-      - name: Checkout repository
+      - name: 🧾 Checkout repository
         uses: actions/checkout@v4
 
-      # ✅ 2. Setup Flutter SDK
-      - name: Setup Flutter
+      - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
           flutter-version: "3.35.6"
 
-      # ✅ 3. Install dependencies
-      - name: Get dependencies
+      - name: 📦 Install dependencies
         run: flutter pub get
 
-      # ✅ 4. Download and install Shorebird CLI
-      - name: Download Shorebird CLI (Linux)
+      - name: ⬇️ Download Shorebird CLI (v1.6.6)
         run: |
-          echo "⬇️ Fetching Shorebird CLI download URL..."
-          RELEASE_DATA=$(curl -s https://api.github.com/repos/shorebirdtech/shorebird/releases/latest)
-          LATEST_URL=$(echo "$RELEASE_DATA" | grep -o 'https.*shorebird-x86_64-unknown-linux-gnu.tar.gz' | head -n 1)
-
-          if [ -z "$LATEST_URL" ]; then
-            echo "❌ Failed to find Linux release URL in Shorebird latest release."
-            echo "$RELEASE_DATA"
-            exit 1
-          fi
-
-          echo "📦 Downloading from: $LATEST_URL"
-          curl -L -o shorebird.tar.gz "$LATEST_URL"
+          echo "⬇️ Downloading Shorebird CLI v1.6.6..."
+          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/download/v1.6.6/shorebird-x86_64-unknown-linux-gnu.tar.gz
 
           echo "📂 Extracting..."
           tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed" && exit 1)
@@ -55,4 +41,14 @@ jobs:
           echo "🧩 Version check:"
           shorebird --version
 
+      - name: 🧠 Verify installation
+        run: shorebird doctor
 
+      - name: 🏗️ Build AppBundle
+        run: shorebird build appbundle --release
+
+      - name: 📤 Upload AAB as artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: appbundle
+          path: build/app/outputs/bundle/release/app-release.aab
