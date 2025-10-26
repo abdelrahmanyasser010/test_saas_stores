@@ -31,12 +31,18 @@ jobs:
         run: flutter pub get
 
       # ✅ 4. Download and install Shorebird CLI
-      - name: Download Shorebird CLI
+      - name: Download Shorebird CLI (via GitHub API)
         run: |
-          echo "⬇️ Downloading Shorebird CLI..."
-          curl -L -o shorebird.tar.gz https://github.com/shorebirdtech/shorebird/releases/download/v1.6.65/shorebird-x86_64-unknown-linux-gnu.tar.gz
-          ls -lah
-          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed"; cat shorebird.tar.gz | head -n 20; exit 1)
+          echo "⬇️ Fetching Shorebird CLI download URL..."
+          API_URL="https://api.github.com/repos/shorebirdtech/shorebird/releases/tags/v1.6.65"
+          ASSET_URL=$(curl -s $API_URL | grep "browser_download_url" | grep "linux-gnu.tar.gz" | cut -d '"' -f 4)
+          echo "Downloading from: $ASSET_URL"
+          curl -L -o shorebird.tar.gz "$ASSET_URL"
+          
+          echo "📦 Extracting..."
+          tar -xzf shorebird.tar.gz || (echo "❌ Extraction failed"; head -n 20 shorebird.tar.gz; exit 1)
+          
           sudo mv shorebird /usr/local/bin/shorebird
           echo "✅ Shorebird installed successfully."
           shorebird --version
+
