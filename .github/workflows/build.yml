@@ -1,51 +1,39 @@
-name: Build Flutter App
+name: Shorebird Build
 
 on:
   workflow_dispatch:
-    inputs:
-      config_url:
-        description: "The URL of the config.json file"
-        required: true
-        type: string
+  push:
+    branches:
+      - main
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      # 1️⃣ Checkout repository
-      - name: Checkout repository
+      - name: 🧩 Checkout code
         uses: actions/checkout@v4
 
-      # 2️⃣ Install Flutter
-      - name: Install Flutter
+      - name: 🧰 Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.4'
+          flutter-version: '3.35.6' # نفس الإصدار اللي شغال عندك محليًا
 
-      # 3️⃣ Download Shorebird CLI (v1.7.0)
-      - name: Download Shorebird CLI
+      - name: 🔧 Install dependencies
+        run: flutter pub get
+
+      - name: 🐦 Install Shorebird CLI from GitHub
         run: |
-          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.7.0/shorebird-x86_64-unknown-linux-gnu.tar.gz
-          tar -xzf shorebird-x86_64-unknown-linux-gnu.tar.gz
-          sudo mv shorebird /usr/local/bin/
+          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
           shorebird --version
 
-      # 4️⃣ Download config.json
-      - name: Download config.json
+      - name: 🏗️ Build release with Shorebird
         run: |
-          echo "⬇️ Downloading config.json from: ${{ github.event.inputs.config_url }}"
-          curl -L "${{ github.event.inputs.config_url }}" -o config.json
-          echo "✅ config.json downloaded successfully"
+          shorebird build release --platform android --force
 
-      # 5️⃣ Apply configuration
-      - name: Apply configuration
-        run: dart run tools/apply_config.dart config.json
-
-      # 6️⃣ Build Android Release (Shorebird)
-      - name: Build Android Release (Shorebird)
-        run: shorebird release android --force
-
-      # 7️⃣ Build iOS Release (Shorebird)
-      - name: Build iOS Release (Shorebird)
-        run: shorebird release ios --force
+      - name: 📦 Upload build artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: app-release
+          path: build/app/outputs/flutter-apk/app-release.apk
