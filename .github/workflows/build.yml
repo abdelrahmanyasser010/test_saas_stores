@@ -43,6 +43,9 @@ jobs:
           dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
           echo "✅ Shorebird CLI compiled successfully."
 
+      - name: 🔑 Shorebird Login
+        run: shorebird login --api-token ${{ secrets.SHOREBIRD_TOKEN }}
+   
       - name: 🏗️ Build AppBundle
         run: shorebird release android --no-confirm
 
