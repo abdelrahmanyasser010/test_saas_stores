@@ -1,4 +1,4 @@
-name: Build Flutter App (Stable)
+name: Build Flutter App
 
 on:
   workflow_dispatch:
@@ -23,11 +23,11 @@ jobs:
         with:
           flutter-version: '3.24.4'
 
-      # 3️⃣ Download Shorebird CLI (v1.5.3 for Flutter 3.24 compatibility)
+      # 3️⃣ Download Shorebird CLI (v1.7.0)
       - name: Download Shorebird CLI
         run: |
-          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.5.3/shorebird-linux-x64.tar.gz
-          tar -xzf shorebird-linux-x64.tar.gz
+          curl -LO https://github.com/shorebirdtech/shorebird/releases/download/v1.7.0/shorebird-x86_64-unknown-linux-gnu.tar.gz
+          tar -xzf shorebird-x86_64-unknown-linux-gnu.tar.gz
           sudo mv shorebird /usr/local/bin/
           shorebird --version
 
@@ -47,7 +47,5 @@ jobs:
         run: shorebird release android --force
 
       # 7️⃣ Build iOS Release (Shorebird)
-        # Note: iOS build runs only on macOS
       - name: Build iOS Release (Shorebird)
-        if: runner.os == 'macOS'
         run: shorebird release ios --force
