@@ -1,12 +1,10 @@
-name: Build Flutter App
+name: Build with Shorebird
 
 on:
-  workflow_dispatch:
-    inputs:
-      config_url:
-        description: "The URL of the config.json file"
-        required: true
-        type: string
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
 
 jobs:
   build:
@@ -16,28 +14,25 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: Install Flutter (3.29.0+)
+      - name: Set up Flutter 3.35.0 (Dart 3.9)
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.29.0' # ✅ يدعم Dart 3.9.0
+          flutter-version: '3.35.0'
+          channel: 'stable'
 
-      - name: Install Shorebird CLI from Git
+      - name: Verify Flutter & Dart versions
         run: |
-          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-          shorebird --version
+          flutter --version
+          dart --version
 
-      - name: Download config.json
-        run: |
-          echo "⬇️ Downloading config.json from: ${{ github.event.inputs.config_url }}"
-          curl -L "${{ github.event.inputs.config_url }}" -o config.json
-          echo "✅ config.json downloaded successfully"
+      - name: Install Shorebird CLI
+        run: dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
 
-      - name: Apply configuration
-        run: dart run tools/apply_config.dart config.json
+      - name: Add Shorebird to PATH
+        run: echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
-      - name: Build Android Release (Shorebird)
-        run: shorebird release android --force
+      - name: Run Flutter pub get
+        run: flutter pub get
 
-      - name: Build iOS Release (Shorebird)
-        run: shorebird release ios --force
+      - name: Build app with Shorebird
+        run: shorebird release apk
