@@ -29,31 +29,28 @@ jobs:
           echo "📍 Flutter SDK Path: $FLUTTER_HOME"
           echo "export SHOREBIRD_FLUTTER_PATH=$FLUTTER_HOME" >> $GITHUB_ENV
 
-      - name: 📦 Install Shorebird CLI
+      - name: 🕊️ Install Shorebird CLI
         run: |
-          echo "🕊️ Installing Shorebird CLI..."
+          echo "🕊️ Installing Shorebird CLI from GitHub..."
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
-          echo "✅ Shorebird CLI installed and added to PATH."
+          echo "✅ Shorebird CLI installed successfully."
+
+      - name: 🧩 Verify Shorebird CLI
+        run: |
+          echo "📍 Verifying Shorebird CLI..."
+          dart run shorebird_cli:shorebird --version
 
       - name: 🔐 Setup Shorebird Auth
         run: |
           mkdir -p /home/runner/.config/shorebird
           echo "✅ Creating Shorebird auth config..."
           echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > /home/runner/.config/shorebird/access_token.json
-          ls -la /home/runner/.config/shorebird
           cat /home/runner/.config/shorebird/access_token.json
-
-      - name: 🧩 Verify Shorebird CLI
-        run: |
-          echo "📍 Verifying Shorebird CLI via Dart..."
-          dart run shorebird_cli:shorebird --version
 
       - name: 🏗️ Build Android Release
         run: |
-          echo "🕊️ Starting Shorebird release via Dart..."
+          echo "🕊️ Starting Shorebird release..."
           dart run shorebird_cli:shorebird release android --no-confirm
-
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
