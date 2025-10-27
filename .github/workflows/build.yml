@@ -43,14 +43,12 @@ jobs:
           dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
           echo "✅ Shorebird CLI compiled successfully."
 
-      - name: 🔑 Shorebird CI Login
+      - name: 🏗️ Build AppBundle (Android)
         env:
           SHOREBIRD_API_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
-        run: shorebird login:ci
+        run: |
+          shorebird release android --no-confirm -- --dart-define SHOREBIRD_API_TOKEN=$SHOREBIRD_API_TOKEN
 
-   
-      - name: 🏗️ Build AppBundle
-        run: shorebird release android -- --no-confirm
 
       - name: 📤 Upload AAB as artifact
         uses: actions/upload-artifact@v4
