@@ -2,11 +2,6 @@ name: Shorebird Build
 
 on:
   workflow_dispatch:
-    inputs:
-      config_url:
-        description: 'Optional configuration URL for backend triggering'
-        required: false
-        default: ''
   push:
     branches:
       - main
@@ -22,7 +17,7 @@ jobs:
       - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.7" # لازم تكون متوافقة مع SDK 3.9.0 اللي مشروعك بيطلبه
+          flutter-version: "3.35.7"
 
       - name: 📦 Install dependencies
         run: flutter pub get
@@ -45,30 +40,27 @@ jobs:
 
       - name: 🔐 Setup Shorebird Auth
         run: |
-         mkdir -p /home/runner/.config/shorebird
-         echo "✅ Creating Shorebird auth config..."
-         echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > /home/runner/.config/shorebird/access_token.json
-         cat /home/runner/.config/shorebird/access_token.json
+          mkdir -p ~/.config/shorebird
+          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > ~/.config/shorebird/access_token.json
+          echo "✅ Auth file created successfully."
 
-         
       - name: 🧩 Verify Shorebird CLI
         run: |
-         export PATH="$PATH:/usr/local/bin"
-         export FLUTTER_ROOT=$(flutter sdk-path)
-         echo "📍 Flutter SDK Path: $FLUTTER_ROOT"
-         which shorebird
-         shorebird --version
-
+          export PATH="$PATH:/usr/local/bin"
+          export FLUTTER_ROOT="/opt/hostedtoolcache/flutter"
+          echo "📍 Flutter SDK Path: $FLUTTER_ROOT"
+          which shorebird
+          shorebird --version
 
       - name: 🏗️ Build Android Release
         run: |
-          export FLUTTER_ROOT=$(flutter sdk-path)
-          shorebird release android --no-confirm
+          export FLUTTER_ROOT="/opt/hostedtoolcache/flutter"
+          export PATH="$PATH:/usr/local/bin"
+          echo "🚀 Running Shorebird Release..."
+          shorebird release android --no-confirm --verbose
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
         with:
           name: appbundle-android
           path: build/app/outputs/bundle/release/app-release.aab
-
-
