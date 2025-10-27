@@ -11,7 +11,6 @@ on:
     branches:
       - main
 
-
 jobs:
   build_android:
     runs-on: ubuntu-latest
@@ -23,19 +22,38 @@ jobs:
       - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.6" # استخدم نسختك الحالية
+          flutter-version: "3.35.7" # لازم تكون متوافقة مع SDK 3.9.0 اللي مشروعك بيطلبه
 
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: ⬇️ Install Shorebird CLI
-        run: curl -fsSL https://get.shorebird.dev | bash
+      - name: ⬇️ Downloading Shorebird CLI v1.6.65
+        run: |
+          echo "⬇️ Downloading Shorebird CLI v1.6.65..."
+          curl -L https://github.com/shorebirdtech/shorebird/archive/refs/tags/v1.6.65.tar.gz -o shorebird.tar.gz
+          echo "📂 Extracting..."
+          tar -xzf shorebird.tar.gz
+          mv shorebird-1.6.65 shorebird
+          echo "✅ Shorebird source ready."
+
+      - name: 🏗️ Build Shorebird CLI from source
+        run: |
+          cd shorebird/packages/shorebird_cli
+          flutter pub get
+          dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
+          echo "✅ Shorebird CLI compiled successfully."
 
       - name: 🔐 Authenticate Shorebird
-        run: shorebird login --ci --token ${{ secrets.SHOREBIRD_TOKEN }}
+        env:
+          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+        run: |
+          echo "🔐 Logging in to Shorebird using CI token..."
+          echo "$SHOREBIRD_TOKEN" | shorebird login:ci
+          echo "✅ Logged in successfully!"
 
       - name: 🏗️ Build Android Release
-        run: shorebird release android --no-confirm
+        run: |
+          shorebird release android --no-confirm
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
