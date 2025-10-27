@@ -42,8 +42,15 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
 
       - name: 🧩 Verify Shorebird CLI
+        shell: bash
         run: |
-          shorebird --version
+          echo "📍 PATH after activation:"
+          echo $PATH
+          echo "📍 Files inside pub-cache/bin:"
+          ls $HOME/.pub-cache/bin
+          echo "📦 Shorebird version:"
+          $HOME/.pub-cache/bin/shorebird --version
+
 
 
       - name: 🚀 Shorebird Release
