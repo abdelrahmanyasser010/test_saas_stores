@@ -37,10 +37,11 @@ jobs:
 
       - name: 📦 Install Shorebird CLI
         run: |
-          dart pub global activate shorebird_cli
-          echo "$(dart pub global list | grep shorebird_cli)"
-          echo "export PATH=\"$PATH:$HOME/.pub-cache/bin\"" >> $GITHUB_ENV
-          export PATH="$PATH:$HOME/.pub-cache/bin"
+         dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
+         echo "$(dart pub global list | grep shorebird)"
+         echo "export PATH=\"$PATH:$HOME/.pub-cache/bin\"" >> $GITHUB_ENV
+         export PATH="$PATH:$HOME/.pub-cache/bin"
+
 
       - name: 🚀 Shorebird Release
         run: |
