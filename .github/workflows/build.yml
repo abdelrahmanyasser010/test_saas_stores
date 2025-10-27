@@ -27,7 +27,7 @@ jobs:
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: ⬇️ Download Shorebird CLI v1.6.65
+      - name: ⬇️ Downloading Shorebird CLI v1.6.65
         run: |
           echo "⬇️ Downloading Shorebird CLI v1.6.65..."
           curl -L https://github.com/shorebirdtech/shorebird/archive/refs/tags/v1.6.65.tar.gz -o shorebird.tar.gz
@@ -43,23 +43,25 @@ jobs:
           dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
           echo "✅ Shorebird CLI compiled successfully."
 
-      - name: 🔑 Shorebird CI Login
-        run: shorebird login:ci -p google --token ${{ secrets.SHOREBIRD_TOKEN }}
-
       - name: 🏗️ Build Android Release
-        run: shorebird release android --no-confirm
+        run: |
+          shorebird release android --no-confirm -- \
+            --dart-define SHOREBIRD_API_TOKEN=${{ secrets.SHOREBIRD_TOKEN }}
 
       - name: 🏗️ Build iOS Release
-        run: shorebird release ios --no-confirm
+        run: |
+          shorebird release ios --no-confirm -- \
+            --dart-define SHOREBIRD_API_TOKEN=${{ secrets.SHOREBIRD_TOKEN }}
 
-      - name: 📤 Upload Android AAB
+      - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: android-appbundle
+          name: appbundle-android
           path: build/app/outputs/bundle/release/app-release.aab
 
-      - name: 📤 Upload iOS IPA
+      - name: 📤 Upload iOS IPA as artifact
         uses: actions/upload-artifact@v4
         with:
-          name: ios-ipa
+          name: appbundle-ios
           path: build/ios/ipa/*.ipa
+
