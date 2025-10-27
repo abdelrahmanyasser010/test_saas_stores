@@ -36,14 +36,6 @@ jobs:
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
           echo "✅ Shorebird CLI installed and added to PATH."
 
-      - name: 🧩 Verify Shorebird CLI
-        run: |
-          echo "📍 PATH:"
-          echo $PATH
-          echo "📦 Checking Shorebird..."
-          which shorebird || true
-          shorebird --version || echo "⚠️ Shorebird not found"
-
       - name: 🔐 Setup Shorebird Auth
         run: |
           mkdir -p /home/runner/.config/shorebird
@@ -52,10 +44,16 @@ jobs:
           ls -la /home/runner/.config/shorebird
           cat /home/runner/.config/shorebird/access_token.json
 
+      - name: 🧩 Verify Shorebird CLI
+        run: |
+          echo "📍 Verifying Shorebird CLI via Dart..."
+          dart run shorebird_cli:shorebird --version
+
       - name: 🏗️ Build Android Release
         run: |
-          echo "🕊️ Starting Shorebird release..."
-          shorebird release android --no-confirm
+          echo "🕊️ Starting Shorebird release via Dart..."
+          dart run shorebird_cli:shorebird release android --no-confirm
+
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
