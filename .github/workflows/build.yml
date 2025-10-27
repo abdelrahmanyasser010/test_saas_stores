@@ -2,9 +2,15 @@ name: Shorebird Build
 
 on:
   workflow_dispatch:
+    inputs:
+      config_url:
+        description: 'Optional configuration URL for backend triggering'
+        required: false
+        default: ''
   push:
     branches:
       - main
+
 
 jobs:
   build_android:
