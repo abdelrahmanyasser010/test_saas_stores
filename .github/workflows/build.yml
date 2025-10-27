@@ -1,5 +1,4 @@
-name: Shorebird Build
-
+name: 🕊️ Shorebird Release Android
 
 on:
   workflow_dispatch:
@@ -13,60 +12,45 @@ on:
       - main
 
 jobs:
-  build_android:
+  build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 🧾 Checkout repository
+      - name: 📦 Checkout Repository
         uses: actions/checkout@v4
 
-      - name: 🐦 Setup Flutter
+      - name: 🧰 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.7"
+          flutter-version: '3.24.4' # نفس إصدارك المحلي
 
-      - name: 📦 Install dependencies
-        run: flutter pub get
-
-      - name: ⬇️ Downloading Shorebird CLI v1.6.65
+      - name: 🔧 Setup Flutter Path
         run: |
-          echo "⬇️ Downloading Shorebird CLI v1.6.65..."
-          curl -L https://github.com/shorebirdtech/shorebird/archive/refs/tags/v1.6.65.tar.gz -o shorebird.tar.gz
-          echo "📂 Extracting..."
-          tar -xzf shorebird.tar.gz
-          mv shorebird-1.6.65 shorebird
-          echo "✅ Shorebird source ready."
-
-      - name: 🏗️ Build Shorebird CLI from source
-        run: |
-          cd shorebird/packages/shorebird_cli
-          flutter pub get
-          dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
-          echo "✅ Shorebird CLI compiled successfully."
+          echo "📍 Flutter SDK Path: $FLUTTER_HOME"
+          echo "export SHOREBIRD_FLUTTER_PATH=$FLUTTER_HOME" >> $GITHUB_ENV
 
       - name: 🔐 Setup Shorebird Auth
         run: |
           mkdir -p ~/.config/shorebird
-          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > ~/.config/shorebird/access_token.json
+          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > ~/.config/shorebird/access_tokens.json
           echo "✅ Auth file created successfully."
 
-      - name: 🧩 Verify Shorebird CLI
+      - name: 📦 Install Shorebird CLI
         run: |
-          export PATH="$PATH:/usr/local/bin"
-          export FLUTTER_ROOT="/opt/hostedtoolcache/flutter"
-          echo "📍 Flutter SDK Path: $FLUTTER_ROOT"
-          which shorebird
-          shorebird --version
+          dart pub global activate shorebird_cli
+          echo "$(dart pub global list | grep shorebird_cli)"
+          echo "export PATH=\"$PATH:$HOME/.pub-cache/bin\"" >> $GITHUB_ENV
+          export PATH="$PATH:$HOME/.pub-cache/bin"
 
-      - name: 🏗️ Build Android Release
+      - name: 🚀 Shorebird Release
         run: |
-          export FLUTTER_ROOT="/opt/hostedtoolcache/flutter"
-          export PATH="$PATH:/usr/local/bin"
-          echo "🚀 Running Shorebird Release..."
-          shorebird release android --no-confirm --verbose
+          echo "🕊️ Starting Shorebird release..."
+          shorebird release android --flutter-dir $SHOREBIRD_FLUTTER_PATH --no-confirm
 
-      - name: 📤 Upload Android AAB as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle-android
-          path: build/app/outputs/bundle/release/app-release.aab
+      - name: 🔁 Optional Backend Callback
+        if: ${{ github.event.inputs.config_url != '' }}
+        run: |
+          echo "📡 Sending callback to ${{ github.event.inputs.config_url }}"
+          curl -X POST "${{ github.event.inputs.config_url }}" \
+            -H "Content-Type: application/json" \
+            -d '{"status":"success","run_id":"${{ github.run_id }}","repo":"${{ github.repository }}"}'
