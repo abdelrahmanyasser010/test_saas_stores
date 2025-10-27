@@ -34,11 +34,13 @@ jobs:
           echo "🕊️ Installing Shorebird CLI from GitHub..."
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
           echo "✅ Shorebird CLI installed successfully."
+          echo "$HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin" >> $GITHUB_PATH
 
       - name: 🧩 Verify Shorebird CLI
         run: |
           echo "📍 Verifying Shorebird CLI..."
-          dart run shorebird_cli:shorebird --version
+          ls -la $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin
+          dart $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin/shorebird.dart --version
 
       - name: 🔐 Setup Shorebird Auth
         run: |
@@ -50,7 +52,7 @@ jobs:
       - name: 🏗️ Build Android Release
         run: |
           echo "🕊️ Starting Shorebird release..."
-          dart run shorebird_cli:shorebird release android --no-confirm
+          dart $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin/shorebird.dart release android --no-confirm
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
