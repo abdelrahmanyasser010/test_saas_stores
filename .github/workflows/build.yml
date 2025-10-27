@@ -29,37 +29,38 @@ jobs:
           echo "📍 Flutter SDK Path: $FLUTTER_HOME"
           echo "export SHOREBIRD_FLUTTER_PATH=$FLUTTER_HOME" >> $GITHUB_ENV
 
-      - name: 🔐 Setup Shorebird Auth
-        run: |
-          mkdir -p ~/.config/shorebird
-          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > ~/.config/shorebird/access_tokens.json
-          echo "✅ Auth file created successfully."
-
       - name: 📦 Install Shorebird CLI
         run: |
           echo "🕊️ Installing Shorebird CLI..."
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          echo "$HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin" >> $GITHUB_PATH
           echo "✅ Shorebird CLI installed and added to PATH."
 
       - name: 🧩 Verify Shorebird CLI
-        shell: bash
         run: |
-          echo "📍 Checking for Shorebird binary..."
-          mkdir -p $HOME/.pub-cache/bin
-          ls -la $HOME/.pub-cache/bin || true
-          echo "📦 Trying to locate shorebird executable..."
-          find $HOME/.pub-cache -name shorebird || true
-          echo "📦 Running version check..."
-          export PATH="$PATH:$HOME/.pub-cache/bin"
-          shorebird --version || echo "⚠️ Shorebird not found in PATH"
+          echo "📍 PATH:"
+          echo $PATH
+          echo "📦 Checking Shorebird..."
+          ls -la $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin
+          shorebird --version
 
+      - name: 🔐 Setup Shorebird Auth
+        run: |
+          mkdir -p /home/runner/.config/shorebird
+          echo "✅ Creating Shorebird auth config..."
+          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > /home/runner/.config/shorebird/access_token.json
+          cat /home/runner/.config/shorebird/access_token.json
 
-
-      - name: 🚀 Shorebird Release
+      - name: 🏗️ Build Android Release
         run: |
           echo "🕊️ Starting Shorebird release..."
-          shorebird release android --flutter-dir $SHOREBIRD_FLUTTER_PATH --no-confirm
+          shorebird release android --no-confirm
+
+      - name: 📤 Upload Android AAB as artifact
+  uses: actions/upload-artifact@v4
+  with:
+    name: appbundle-android
+    path: build/app/outputs/bundle/release/app-release.aab
 
       - name: 🔁 Optional Backend Callback
         if: ${{ github.event.inputs.config_url != '' }}
