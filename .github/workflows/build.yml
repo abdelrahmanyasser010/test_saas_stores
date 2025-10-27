@@ -22,7 +22,7 @@ jobs:
       - name: 🧰 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: '3.24.4' # نفس إصدارك المحلي
+          flutter-version: "3.35.7" # نفس إصدارك المحلي
 
       - name: 🔧 Setup Flutter Path
         run: |
