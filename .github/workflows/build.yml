@@ -2,17 +2,12 @@ name: Shorebird Build
 
 on:
   workflow_dispatch:
-    inputs:
-      config_url:
-        description: 'Optional configuration URL for backend triggering'
-        required: false
-        default: ''
   push:
     branches:
       - main
 
 jobs:
-  build:
+  build_android:
     runs-on: ubuntu-latest
 
     steps:
@@ -22,36 +17,19 @@ jobs:
       - name: 🐦 Setup Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.6"
+          flutter-version: "3.24.4" # استخدم نسختك الحالية
 
       - name: 📦 Install dependencies
         run: flutter pub get
 
-      - name: ⬇️ Downloading Shorebird CLI v1.6.65
-        run: |
-          echo "⬇️ Downloading Shorebird CLI v1.6.65..."
-          curl -L https://github.com/shorebirdtech/shorebird/archive/refs/tags/v1.6.65.tar.gz -o shorebird.tar.gz
-          echo "📂 Extracting..."
-          tar -xzf shorebird.tar.gz
-          mv shorebird-1.6.65 shorebird
-          echo "✅ Shorebird source ready."
+      - name: ⬇️ Install Shorebird CLI
+        run: curl -fsSL https://get.shorebird.dev | bash
 
-      - name: 🏗️ Build Shorebird CLI from source
-        run: |
-          cd shorebird/packages/shorebird_cli
-          flutter pub get
-          dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
-          echo "✅ Shorebird CLI compiled successfully."
+      - name: 🔐 Authenticate Shorebird
+        run: shorebird login --ci --token ${{ secrets.SHOREBIRD_TOKEN }}
 
       - name: 🏗️ Build Android Release
-        run: |
-          shorebird release android --no-confirm -- \
-            --dart-define SHOREBIRD_API_TOKEN=${{ secrets.SHOREBIRD_TOKEN }}
-
-      - name: 🏗️ Build iOS Release
-        run: |
-          shorebird release ios --no-confirm -- \
-            --dart-define SHOREBIRD_API_TOKEN=${{ secrets.SHOREBIRD_TOKEN }}
+        run: shorebird release android --no-confirm
 
       - name: 📤 Upload Android AAB as artifact
         uses: actions/upload-artifact@v4
@@ -59,9 +37,4 @@ jobs:
           name: appbundle-android
           path: build/app/outputs/bundle/release/app-release.aab
 
-      - name: 📤 Upload iOS IPA as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle-ios
-          path: build/ios/ipa/*.ipa
 
