@@ -43,13 +43,11 @@ jobs:
           dart compile exe bin/shorebird.dart -o /usr/local/bin/shorebird
           echo "✅ Shorebird CLI compiled successfully."
 
-      - name: 🔐 Authenticate Shorebird
-        env:
-          SHOREBIRD_TOKEN: ${{ secrets.SHOREBIRD_TOKEN }}
+      - name: 🔐 Setup Shorebird Auth
         run: |
-          echo "🔐 Logging in to Shorebird using CI token..."
-          echo "$SHOREBIRD_TOKEN" | shorebird login:ci
-          echo "✅ Logged in successfully!"
+          mkdir -p ~/.config/shorebird
+          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > ~/.config/shorebird/access_tokens.json
+          echo "✅ Auth file created successfully."
 
       - name: 🏗️ Build Android Release
         run: |
