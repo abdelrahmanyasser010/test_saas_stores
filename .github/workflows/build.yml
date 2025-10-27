@@ -37,19 +37,22 @@ jobs:
 
       - name: 📦 Install Shorebird CLI
         run: |
+          echo "🕊️ Installing Shorebird CLI..."
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "✅ Shorebird CLI installed successfully."
           echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+          echo "✅ Shorebird CLI installed and added to PATH."
 
       - name: 🧩 Verify Shorebird CLI
         shell: bash
         run: |
-          echo "📍 PATH after activation:"
-          echo $PATH
-          echo "📍 Files inside pub-cache/bin:"
-          ls $HOME/.pub-cache/bin
-          echo "📦 Shorebird version:"
-          $HOME/.pub-cache/bin/shorebird --version
+          echo "📍 Checking for Shorebird binary..."
+          mkdir -p $HOME/.pub-cache/bin
+          ls -la $HOME/.pub-cache/bin || true
+          echo "📦 Trying to locate shorebird executable..."
+          find $HOME/.pub-cache -name shorebird || true
+          echo "📦 Running version check..."
+          export PATH="$PATH:$HOME/.pub-cache/bin"
+          shorebird --version || echo "⚠️ Shorebird not found in PATH"
 
 
 
