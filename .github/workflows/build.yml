@@ -49,14 +49,20 @@ jobs:
          echo "✅ Creating Shorebird auth config..."
          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > /home/runner/.config/shorebird/access_token.json
          cat /home/runner/.config/shorebird/access_token.json
+
+         
       - name: 🧩 Verify Shorebird CLI
         run: |
          export PATH="$PATH:/usr/local/bin"
+         export FLUTTER_ROOT=$(flutter sdk-path)
+         echo "📍 Flutter SDK Path: $FLUTTER_ROOT"
          which shorebird
          shorebird --version
 
+
       - name: 🏗️ Build Android Release
         run: |
+          export FLUTTER_ROOT=$(flutter sdk-path)
           shorebird release android --no-confirm
 
       - name: 📤 Upload Android AAB as artifact
