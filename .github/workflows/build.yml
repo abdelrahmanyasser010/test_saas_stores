@@ -39,8 +39,12 @@ jobs:
         run: |
           dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
           echo "✅ Shorebird CLI installed successfully."
-          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATHME/.pub-cache/bin"
+          echo "$HOME/.pub-cache/bin" >> $GITHUB_PATH
+
+      - name: 🧩 Verify Shorebird CLI
+        run: |
           shorebird --version
+
 
       - name: 🚀 Shorebird Release
         run: |
