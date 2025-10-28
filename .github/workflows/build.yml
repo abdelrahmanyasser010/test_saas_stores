@@ -43,28 +43,15 @@ jobs:
       - name: Build Android Release
         run: flutter build appbundle --release
 
-      # 7️⃣ Install gdrive CLI
-      - name: Install gdrive CLI
-        run: |
-          curl -L -o gdrive "https://github.com/glotlabs/gdrive/releases/latest/download/gdrive-linux-x64"
-          # خلي الملف قابل للتنفيذ
-          chmod +x gdrive
-          # انقله للمسار التنفيذي
-          sudo mv gdrive /usr/local/bin/gdrive
-          # تأكد إنه شغال
-          gdrive version
-
-      # 8️⃣ Upload AAB to Google Drive
-      - name: Upload to Google Drive
+      - name: Upload AAB to GitHub Release
+        uses: softprops/action-gh-release@v1
+        with:
+          files: build/app/outputs/bundle/release/app-release.aab
+          name: "Release - ${{ github.run_number }}"
+          tag_name: "v${{ github.run_number }}"
+          body: "✅ Automated build uploaded via GitHub Actions."
         env:
-          DRIVE_FOLDER: ${{ secrets.CONFIG_LINK }}
-        run: |
-          APK_PATH="build/app/outputs/bundle/release/app-release.aab"
-          # استخراج Folder ID من الرابط
-          FOLDER_ID=$(echo $DRIVE_FOLDER | awk -F '/' '{print $6}')
-          # رفع الملف باسم package_name من config
-          PACKAGE_NAME=$(jq -r '.package_name' config.json)
-          gdrive upload --parent $FOLDER_ID --name "${PACKAGE_NAME}.aab" "$APK_PATH"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
       # 9️⃣ Optional: Send completion message
       - name: Build Completed
