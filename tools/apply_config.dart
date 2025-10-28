@@ -57,20 +57,20 @@ Future<void> main() async {
   }
 
   // 💾 4. حفظ ملفات البصمة (keystore و iOS cert)
-  final keystoreDir = Directory('keys');
-  if (!keystoreDir.existsSync()) await keystoreDir.create();
+  // final keystoreDir = Directory('keys');
+  // if (!keystoreDir.existsSync()) await keystoreDir.create();
 
-  if (androidKeystore != null) {
-    final ksFile = File('keys/android_keystore.jks');
-    await ksFile.writeAsBytes(base64Decode(androidKeystore));
-    print('✅ Android keystore saved.');
-  }
+  // if (androidKeystore != null) {
+  //   final ksFile = File('keys/android_keystore.jks');
+  //   await ksFile.writeAsBytes(base64Decode(androidKeystore));
+  //   print('✅ Android keystore saved.');
+  // }
 
-  if (iosCert != null) {
-    final iosFile = File('keys/ios_certificate.p12');
-    await iosFile.writeAsBytes(base64Decode(iosCert));
-    print('✅ iOS certificate saved.');
-  }
+  // if (iosCert != null) {
+  //   final iosFile = File('keys/ios_certificate.p12');
+  //   await iosFile.writeAsBytes(base64Decode(iosCert));
+  //   print('✅ iOS certificate saved.');
+  // }
 
   // 📝 5. تعديل pubspec.yaml (الاسم، الفيرجن، والأيقونة)
   final pubspec = File('pubspec.yaml');
