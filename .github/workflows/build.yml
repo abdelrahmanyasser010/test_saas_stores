@@ -1,69 +1,67 @@
-name: 🕊️ Shorebird Release Android
+name: Build & Upload Flutter App
 
 on:
   workflow_dispatch:
     inputs:
       config_url:
-        description: 'Optional configuration URL for backend triggering'
-        required: false
-        default: ''
-  push:
-    branches:
-      - main
+        description: "The URL of the config.json file"
+        required: true
+        type: string
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-      - name: 📦 Checkout Repository
+      # 1️⃣ Checkout repository
+      - name: Checkout repository
         uses: actions/checkout@v4
 
-      - name: 🧰 Setup Flutter
+      # 2️⃣ Install Flutter
+      - name: Install Flutter
         uses: subosito/flutter-action@v2
         with:
-          flutter-version: "3.35.7" # نفس إصدارك المحلي
+          flutter-version: '3.24.4'
 
-      - name: 🔧 Setup Flutter Path
+      # 3️⃣ Install Dart dependencies (for apply_config.dart)
+      - name: Install dependencies
+        run: flutter pub get
+
+      # 4️⃣ Download config.json
+      - name: Download config.json
         run: |
-          echo "📍 Flutter SDK Path: $FLUTTER_HOME"
-          echo "export SHOREBIRD_FLUTTER_PATH=$FLUTTER_HOME" >> $GITHUB_ENV
+          echo "⬇️ Downloading config.json from ${{ github.event.inputs.config_url }}"
+          curl -L "${{ github.event.inputs.config_url }}" -o config.json
+          echo "✅ config.json downloaded"
 
-      - name: 🕊️ Install Shorebird CLI
+      # 5️⃣ Apply configuration
+      - name: Apply configuration
+        run: dart run tools/apply_config.dart
+
+      # 6️⃣ Build Android AAB
+      - name: Build Android Release
+        run: flutter build appbundle --release
+
+      # 7️⃣ Install gdrive CLI
+      - name: Install gdrive CLI
         run: |
-          echo "🕊️ Installing Shorebird CLI from GitHub..."
-          dart pub global activate --source git https://github.com/shorebirdtech/shorebird.git
-          echo "✅ Shorebird CLI installed successfully."
-          echo "$HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin" >> $GITHUB_PATH
+          curl -Lo gdrive https://github.com/prasmussen/gdrive/releases/download/2.1.1/gdrive-linux-x64
+          chmod +x gdrive
+          sudo mv gdrive /usr/local/bin/
+          gdrive version
 
-      - name: 🧩 Verify Shorebird CLI
+      # 8️⃣ Upload AAB to Google Drive
+      - name: Upload to Google Drive
+        env:
+          DRIVE_FOLDER: ${{ secrets.CONFIG_LINK }}
         run: |
-          echo "📍 Verifying Shorebird CLI..."
-          ls -la $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin
-          dart $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin/shorebird.dart --version
+          APK_PATH="build/app/outputs/bundle/release/app-release.aab"
+          # استخراج Folder ID من الرابط
+          FOLDER_ID=$(echo $DRIVE_FOLDER | awk -F '/' '{print $6}')
+          # رفع الملف باسم package_name من config
+          PACKAGE_NAME=$(jq -r '.package_name' config.json)
+          gdrive upload --parent $FOLDER_ID --name "${PACKAGE_NAME}.aab" "$APK_PATH"
 
-      - name: 🔐 Setup Shorebird Auth
-        run: |
-          mkdir -p /home/runner/.config/shorebird
-          echo "✅ Creating Shorebird auth config..."
-          echo "{\"access_token\": \"${{ secrets.SHOREBIRD_TOKEN }}\", \"refresh_token\": \"\", \"provider\": \"google\"}" > /home/runner/.config/shorebird/access_token.json
-          cat /home/runner/.config/shorebird/access_token.json
-
-      - name: 🏗️ Build Android Release
-        run: |
-          echo "🕊️ Starting Shorebird release..."
-          dart $HOME/.pub-cache/git/shorebird-3b83b1a7c2ee8b48ba14644cb25e4b42ac578cb7/bin/shorebird.dart release android --no-confirm
-
-      - name: 📤 Upload Android AAB as artifact
-        uses: actions/upload-artifact@v4
-        with:
-          name: appbundle-android
-          path: build/app/outputs/bundle/release/app-release.aab
-
-      - name: 🔁 Optional Backend Callback
-        if: ${{ github.event.inputs.config_url != '' }}
-        run: |
-          echo "📡 Sending callback to ${{ github.event.inputs.config_url }}"
-          curl -X POST "${{ github.event.inputs.config_url }}" \
-            -H "Content-Type: application/json" \
-            -d '{"status":"success","run_id":"${{ github.run_id }}","repo":"${{ github.repository }}"}'
+      # 9️⃣ Optional: Send completion message
+      - name: Build Completed
+        run: echo "✅ Build and upload completed successfully!"
